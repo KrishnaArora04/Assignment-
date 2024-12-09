@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>AI Code Optimizer</title>
+</head>
+<body>
+    <div class="container">
+        <h1>AI-Powered Code Optimizer</h1>
+        <form id="codeForm">
+            <textarea name="code" id="code" placeholder="Paste your Python code here..." required></textarea>
+            <button type="submit">Analyze</button>
+        </form>
+        <div id="results" class="results-container"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('codeForm');
+        const resultsDiv = document.getElementById('results');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Clear previous results
+            resultsDiv.innerHTML = '<p>Analyzing...</p>';
+
+            const code = document.getElementById('code').value;
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({ code }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.error) {
+                    resultsDiv.innerHTML = `<p class="error">${data.error}</p>`;
+                } else if (data.messages && data.messages.length > 0) {
+                    const messages = data.messages.map(msg => `<li>${msg}</li>`).join('');
+                    resultsDiv.innerHTML = `<ul>${messages}</ul>`;
+                } else {
+                    resultsDiv.innerHTML = `<p>No issues found in the provided code.</p>`;
+                }
+            } catch (error) {
+                console.error('Error analyzing code:', error);
+                resultsDiv.innerHTML = `<p class="error">An error occurred while analyzing the code. Please try again later.</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
